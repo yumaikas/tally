@@ -13,8 +13,6 @@
 
   notes "/notes"
 
-
-
   reports "/reports"
   appts-report "/reports/print-appointments"
   meds-report "/reports/print-medications"

@@ -1,11 +1,12 @@
 (use praxis)
 (import praxis/sqlite :as db)
 
+# These schemata represent a snapshot of the current database
 (s/defschema
   Condition
   (s/field :rowid :integer)
-  )
-
+  (s/field :name :string)
+  (s/field :description :string))
 
 (s/defschema
   Medication
@@ -13,8 +14,6 @@
   (s/field :name :integer :title "Medication Name")
   (s/field :dose-per-pill :number :title "Dose per pill")
   (s/field :dose-unit :string :title "Dose unit"))
-
-(db/join-table Condition Medication :many-to-many)
 
 (s/defschema 
   DosingPlan
@@ -28,9 +27,9 @@
   MedicineStock
   (s/field :rowid :integer)
   (s/field :medicine_id :integer :fk Medicine)
+  (s/field :quantity-of-doses :integer)
   # Is a year-month-day string
   (s/field :effective-date :string)
-
 
 
 (s/defschema 
@@ -40,4 +39,6 @@
   (s/field :created :integer)
   (s/field :updated :integer))
 
-(db/join-table Notes Condition :many-to-many)
+# (db/join-table Condition Medication :many-to-many)
+# (db/join-table Notes Medication :many-to-many)
+# (db/join-table Notes Condition :many-to-many)
