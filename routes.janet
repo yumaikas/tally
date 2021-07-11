@@ -2,14 +2,14 @@
 
 (r/routes 
   home "/"
-  condition "/conditions"
-  show-condition "/conditions/:id"
+  conditions "/conditions"
+  condition-by-id "/conditions/:id"
   condition-meds "/conditions/:id/medications"
   condition-notes "/conditions/:id/notes"
 
-  medication "/medications"
-  show-medication "/medications/:id"
-  show-medication "/medications/:id/conditions"
+  medications "/medications"
+  medication-by-id "/medications/:id"
+  medication-conditions "/medications/:id/conditions"
 
   notes "/notes"
 

@@ -1,10 +1,10 @@
 (import janet-html :as html)
 (use praxis)
 (use markable)
-(use ./schema)
 
-
+(import ./db)
 (import ./routes :as rt)
+
 
 (defn s. [& args] (string ;args))
 
@@ -20,67 +20,60 @@
       [:link {:rel "stylesheet" :href "/base.css" }] ]
      [:body body]]))
 
-(defn link-to-lead [lead] 
-  [:a {:href (rt/view-lead<- (get lead :rowid))} "View"])
 
-(defn home [leads &opt lead] 
+(defn header-link [title href] [:h3 [:a {:href href} title]])
+
+(defn home [] 
   (layout 
     [:div
-     [:h2 "Current leads"]
-     (r/table Lead leads 
-              :ord [ :name ]
-              :computed 
-              [:link 
-               {:title "View"
-                :fn |(link-to-lead $) }]) 
+     [:h2 "MediTally"]
+     (header-link "Medications" (rt/medications<-))
+     (header-link "Conditions" (rt/conditions<-))
      [:br]
-     [:h2 "Add new lead"]
-     (r/form (or lead (s/empty-of Lead))
-             :action "/leads/add"
-             :submit-txt "Add new lead!")]))
+     ]))
 
-
-(defn lead [lead activities] 
-  (def item-link 
-    {:title "View Activity"
-     :fn |[:a {:href (rt/view-activity<- (or ($ :rowid) "NIL"))} "View"] })
-  (def item-header
-    {:title "Notes"
-     :fn |[:div ($ :notes)]})
-  
-  (layout
-    [:div
-     [:h2 (lead :name)]
-     [:div (markdown->html :description)]
-     [:br]
-     [:br]
-
-     (r/table Activity activities
-              :ord [ :link :title :tags :header ]
-              :computed {:link item-link :header item-header })
-    (r/form (as-> (s/empty-of Activity) it 
-                  (put-in it [:vals :lead_id] (lead :rowid)))
-            :action (rt/add-activity<- (lead :rowid))
-            :submit-txt "Add Activity")]))
-
-(defn activity [activity] 
+(defn conditions [conds &opt wip-cond] 
   (layout 
-    [:div
-     [:h2 "Viewing Actvity"]
-     [:br]
-     [:h3 (get-in activity [:vals :title])]
-     [:h4 (get-in activity [:vals :tags])]
-     [:hr]
-     [:div (markdown->html (get-in activity [:vals :content]))]
-     [:hr]]))
+    [:div 
+     [:h2 "Conditions"]
+     [:a {:href rt/home} "(back to main)"]
+      (if (> (length conds) 0)
+        (r/table db/Condition conds 
+                 :ord [:name :description] 
+                 :computed {:name
+                            {:title "Name"
+                            :fn (fn [r] [:a {:href (rt/condition-by-id<- (r :rowid))} (r :name)])
+                            }})
+        [:div "No conditions yet, add one?"]
+        )
+     [:h3 "Add new condition"]
+     (r/form (or wip-cond (s/empty-of db/Condition))
+             :action (rt/conditions<-)
+             :submit-txt "Add condition")
+     ])
+  )
 
-(defn fix-activity [item lead-id] 
+(defn medications [meds &opt wip-med] 
+  (def tbl-meds meds)
   (layout 
-    [:div
-     [:h2 "Please correct errors with this activity"]
-     (r/form item
-             :action (rt/add-activity lead-id)
-             :submit-txt "Send message")]))
+    [:div 
+     [:h2 "Medications"]
+     [:a {:href rt/home} "(back to main)"]
+      (if (> (length meds) 0)
+        (r/table db/Medication tbl-meds 
+                 :ord [:name :dose_unit :dose_per_pill] 
+                 :computed {:name
+                            {:title "Name"
+                            :fn (fn [r] [:a {:href (rt/medication-by-id<- (r :rowid))} (r :name)])
+                            }})
+        [:div "No meds yet, add one?"]
+        )
+     [:h3 "Add new medication"]
+     (r/form (or wip-med (s/empty-of db/Medication))
+             :action (rt/medications<-)
+             :submit-txt "Add Medication")
+     ])
+  )
 
 (defn show-error [msg] 
   (layout

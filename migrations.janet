@@ -37,12 +37,16 @@
     (s/field :text :string)
     (s/field :created :integer)
     (s/field :updated :integer))
+  (db/tx file
+         (db/init [Condition Medication DosingPlan MedicineStock Notes]))
   )
 
-(defn v1-down [] 
-  )
+(defn v1-down [file] 
+  (db/tx file
+         (db/drop-tables Condition Medication DosingPlan Medication Notes)
+  ))
 
-(def versions [
-               [v1-up 
-               ])
+(def versions [{:version 1 :up v1-up :down v1-down}])
+
+
 
