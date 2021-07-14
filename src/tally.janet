@@ -1,3 +1,4 @@
+(import err)
 (import ./server)
 (import ./db)
 
@@ -23,4 +24,4 @@
     ["createdb"] (db/create ;(slice args 1))
     ["serve"] (server/serve ;(slice args 1))
     ["help"] (show-help)
-    _ (error "Did not rego")))
+    _ (error "Did not recognize ")))
