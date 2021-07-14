@@ -32,15 +32,17 @@
   (GET rt/home (html-of (v/home)))
 
   (GET rt/medications (html-of (v/medications (db/list-meds db-file))))
+
   (POST rt/medications 
         (match (db/add-med db-file params)
           [:ok] (redirect-to rt/medications)
-          [:err wip-med] (v/medications (db/list-meds db-file) wip-med)))
+          [:err wip-med] (html-of (v/medications (db/list-meds db-file) wip-med))))
+
   (GET rt/conditions (html-of (v/conditions (db/list-conditions db-file))))
   (POST rt/conditions 
         (match (db/add-condition db-file params)
           [:ok] (redirect-to rt/conditions)
-          [:err wip-cond] (v/conditions (db/list-conditions db-file) wip-cond)))
+          [:err wip-cond] (html-of (v/conditions (db/list-conditions db-file) wip-cond))))
 
 
   # temp

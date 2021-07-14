@@ -3,6 +3,7 @@
 (use markable)
 
 (import ./db)
+(use ./schema)
 (import ./routes :as rt)
 
 
@@ -38,7 +39,7 @@
      [:h2 "Conditions"]
      [:a {:href rt/home} "(back to main)"]
       (if (> (length conds) 0)
-        (r/table db/Condition conds 
+        (r/table Condition conds 
                  :ord [:name :description] 
                  :computed {:name
                             {:title "Name"
@@ -47,29 +48,31 @@
         [:div "No conditions yet, add one?"]
         )
      [:h3 "Add new condition"]
-     (r/form (or wip-cond (s/empty-of db/Condition))
+     (r/form (or wip-cond (s/empty-of Condition))
              :action (rt/conditions<-)
              :submit-txt "Add condition")
      ])
   )
 
 (defn medications [meds &opt wip-med] 
-  (def tbl-meds meds)
+  (def tbl-mediDose meds)
   (layout 
     [:div 
      [:h2 "Medications"]
      [:a {:href rt/home} "(back to main)"]
       (if (> (length meds) 0)
-        (r/table db/Medication tbl-meds 
-                 :ord [:name :dose_unit :dose_per_pill] 
-                 :computed {:name
-                            {:title "Name"
-                            :fn (fn [r] [:a {:href (rt/medication-by-id<- (r :rowid))} (r :name)])
-                            }})
+        (do
+          (pp meds)
+          (r/table form/MediDose tbl-mediDose
+                   :ord [:name :dose_unit :dose_per_pill :dose_interval :doses_per_interval] 
+                   :computed {:name
+                              {:title "Name"
+                               :fn (fn [r] (pp r) [:a {:href (rt/medication-by-id<- (r :med_rowid))} (r :name)])
+                               }}))
         [:div "No meds yet, add one?"]
         )
      [:h3 "Add new medication"]
-     (r/form (or wip-med (s/empty-of db/Medication))
+     (r/form (or wip-med (s/empty-of form/MediDose))
              :action (rt/medications<-)
              :submit-txt "Add Medication")
      ])

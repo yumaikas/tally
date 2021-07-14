@@ -1,42 +1,6 @@
 (use praxis)
 (import praxis/sqlite :as db)
-
-# These schemata represent a snapshot of the current database
-(s/defschema
-  Condition
-  (s/field :rowid :integer :hidden true)
-  (s/field :name :string :title "Name")
-  (s/field :description :text :title "Description"))
-
-(s/defschema
-  Medication
-  (s/field :rowid :integer :hidden true)
-  (s/field :name :string :title "Medication Name")
-  (s/field :dose_per_pill :number :title "Dose per pill")
-  (s/field :dose_unit :string :title "Dose unit"))
-
-(s/defschema 
-  DosingPlan
-  (s/field :rowid :integer)
-  (s/field :medication_id :integer)
-  # Can be one of daily, weekly, monthly or yearly
-  (s/field :dose_interval :string :title "Dosage interval")
-  (s/field :doses_per_interval :number :title "Doses per interval"))
-
-(s/defschema 
-  MedicineStock
-  (s/field :rowid :integer)
-  (s/field :medicine_id :integer :fk Medication)
-  (s/field :quantity_of_doses :integer)
-  # Is a year-month-day string
-  (s/field :effective_date :string))
-
-(s/defschema 
-  Notes
-  (s/field :rowid :integer)
-  (s/field :text :string)
-  (s/field :created :integer)
-  (s/field :updated :integer))
+(use ./schema)
 
 (defn create [file] 
   #(setdyn :praxis/sqltrace true)
@@ -50,26 +14,46 @@
     file
     (map |(s/cast 
             :from $ 
-            :to Medication 
-            :fields (tracev (keys $)))
-         (db/eval "Select rowid, name, dose_per_pill, dose_unit from Medication"))))
+            :to form/MediDose 
+            :fields (form/MediDose :field-order))
+         (db/eval `
+            Select 
+             med.rowid as med_rowid, 
+             med.name, 
+             med.dose_per_pill, 
+             med.dose_unit,
+             dose.rowid as does_rowid,
+             COALESCE(dose.dose_interval, 'Unset') as dose_interval,
+             COALESCE(dose.doses_per_interval, 'Unset') as doses_per_interval
+             from Medication as med
+             left join DosingPlan as dose on dose.medication_id = med.rowid
+             `))))
 
-(defn- insert-med [file medPx]
-  (db/tx
-    file
-    (db/insert Medication medPx)))
+(defn- insert-med [medPx]
+    (db/insert Medication medPx))
+(defn- insert-dosing-plan [dosePlanPx]
+  (db/insert DosingPlan dosePlanPx))
+
 
 (defn add-med [file med] 
-  (def med (s/cast 
-             :from med 
-             :to Medication 
-             :fields [:name :dose_per_pill :dose_unit]))
-  (if-not (s/has-errors? med)
+  (def mediDose (form/MediDose/validate med))
+
+  (when (s/has-errors? mediDose)
+    (break [:err mediDose]))
+
+  (def medPx (Medication/insert-validate med))
+                   
+  (if-not (s/has-errors? medPx)
     (do 
-      (def medDb (insert-med file med))
-      [:ok medDb])
-    [:err med])
-  )
+      (db/tx file
+        (def medId (insert-med medPx))
+        (def dosePlanPx (DosingPlan/insert-validate (merge med {:medication_id medId})))
+        (when (s/has-errors? dosePlanPx)
+          (error "!!!"))
+        (insert-dosing-plan dosePlanPx)
+        [:ok medId])
+    [:err medPx])
+  ))
 
 (defn list-conditions [file]
   (db/tx
@@ -97,8 +81,3 @@
     [:err _cond])
   )
 
-# resume with
-# eye db.janet migrations.janet project.janet routes.janet server.janet tally.janet time.janet views.janet test --cmd janet tally.janet createdb test.db
-# (db/join-table Condition Medication :many-to-many)
-# (db/join-table Notes Medication :many-to-many)
-# (db/join-table Notes Condition :many-to-many)

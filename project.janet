@@ -12,5 +12,5 @@
       )
 
 
-(declare-source :name "tally" :source "tally.janet")
+(declare-source :name "tally" :source "src/tally.janet")
 
