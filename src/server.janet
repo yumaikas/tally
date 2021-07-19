@@ -1,4 +1,5 @@
 (use osprey)
+(import json)
 (import ./views :as v)
 (import ./routes :as rt) 
 (import ./db)
@@ -7,6 +8,12 @@
   {:status 200
    :headers {"Content-Type" "text/html"}
    :body body})
+
+(defn json-of [data] 
+  {:status 200
+   :headers {"Content-Type" "text/json"}
+   :body (json/encode data)})
+
 (defn text-of [body] 
   {:status 200
    :headers {"Content-Type" "text/plain"}
@@ -32,6 +39,8 @@
   (GET rt/home (html-of (v/home)))
 
   (GET rt/medications (html-of (v/medications (db/list-meds db-file))))
+
+  (GET rt/api-v1-medications (json-of (map |($ :vals) (db/list-meds db-file))))
 
   (POST rt/medications 
         (match (db/add-med db-file params)

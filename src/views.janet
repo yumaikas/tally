@@ -27,10 +27,8 @@
 (defn home [] 
   (layout 
     [:div
-     [:h2 "MediTally"]
-     (header-link "Medications" (rt/medications<-))
-     (header-link "Conditions" (rt/conditions<-))
-     [:br]
+     [:div {:id "app"} "Loading MediTally..."]
+     [:script {:type "text/javascript" :src "/index.js"} ]
      ]))
 
 (defn conditions [conds &opt wip-cond] 
@@ -62,7 +60,6 @@
      [:a {:href rt/home} "(back to main)"]
       (if (> (length meds) 0)
         (do
-          (pp meds)
           (r/table form/MediDose tbl-mediDose
                    :ord [:name :dose_unit :dose_per_pill :dose_interval :doses_per_interval] 
                    :computed {:name

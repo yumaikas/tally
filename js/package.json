@@ -1,0 +1,11 @@
+{
+    "name": "tally-frontend",
+    "version": "v0.0.1",
+    "description": "The frontend for the tally medicine tracker project",
+    "dependencies": {
+        "esbuild": "^0.12.15",
+        "history": "^5.0.0",
+        "preact": "^10.5.14",
+        "preact-router": "^3.2.1"
+    }
+}

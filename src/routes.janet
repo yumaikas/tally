@@ -7,6 +7,8 @@
   condition-meds "/conditions/:id/medications"
   condition-notes "/conditions/:id/notes"
 
+  api-v1-medications "/api/v1/medications"
+
   medications "/medications"
   medication-by-id "/medications/:id"
   medication-conditions "/medications/:id/conditions"
