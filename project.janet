@@ -1,5 +1,7 @@
 (declare-project 
       :name "tally"
+      :author "Andrew Owen <yumaikas94@gmail.com>"
+      :url "https://github.com/yumaikas/tally"
       :description "A personal inventory system for supplies that are consumed on a patterned basis."
       :dependencies 
       [
